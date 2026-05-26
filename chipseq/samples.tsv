@@ -1,0 +1,9 @@
+sample	group	type	control	layout	r1	r2
+H3K27ac_WT_rep1	WT	IP	input_WT_rep1	PE	data/raw/H3K27ac_WT_rep1_1.fastq.gz	data/raw/H3K27ac_WT_rep1_2.fastq.gz
+H3K27ac_WT_rep2	WT	IP	input_WT_rep2	PE	data/raw/H3K27ac_WT_rep2_1.fastq.gz	data/raw/H3K27ac_WT_rep2_2.fastq.gz
+H3K27ac_KO_rep1	KO	IP	input_KO_rep1	PE	data/raw/H3K27ac_KO_rep1_1.fastq.gz	data/raw/H3K27ac_KO_rep1_2.fastq.gz
+H3K27ac_KO_rep2	KO	IP	input_KO_rep2	PE	data/raw/H3K27ac_KO_rep2_1.fastq.gz	data/raw/H3K27ac_KO_rep2_2.fastq.gz
+input_WT_rep1	WT	input		PE	data/raw/input_WT_rep1_1.fastq.gz	data/raw/input_WT_rep1_2.fastq.gz
+input_WT_rep2	WT	input		PE	data/raw/input_WT_rep2_1.fastq.gz	data/raw/input_WT_rep2_2.fastq.gz
+input_KO_rep1	KO	input		PE	data/raw/input_KO_rep1_1.fastq.gz	data/raw/input_KO_rep1_2.fastq.gz
+input_KO_rep2	KO	input		PE	data/raw/input_KO_rep2_1.fastq.gz	data/raw/input_KO_rep2_2.fastq.gz
