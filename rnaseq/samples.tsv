@@ -1,0 +1,7 @@
+sample	group	layout	r1	r2
+sample_01	WT	PE	data/raw/sample_01_1.fastq.gz	data/raw/sample_01_2.fastq.gz
+sample_02	WT	PE	data/raw/sample_02_1.fastq.gz	data/raw/sample_02_2.fastq.gz
+sample_03	treatA	PE	data/raw/sample_03_1.fastq.gz	data/raw/sample_03_2.fastq.gz
+sample_04	treatA	PE	data/raw/sample_04_1.fastq.gz	data/raw/sample_04_2.fastq.gz
+sample_05	treatB	PE	data/raw/sample_05_1.fastq.gz	data/raw/sample_05_2.fastq.gz
+sample_06	treatB	PE	data/raw/sample_06_1.fastq.gz	data/raw/sample_06_2.fastq.gz
