@@ -1,0 +1,94 @@
+# ATAC-seq Snakemake pipeline configuration
+# ==========================================
+
+# Reference files
+ref:
+  bowtie2_index: "ref/human"
+  gtf: "ref/gencode.v41.annotation.gtf"
+  # Effective genome size for MACS3 (hs = human)
+  macs_genome: "hs"
+
+# fastp parameters
+fastp:
+  threads: 4
+  length_required: 36
+  qualified_quality_phred: 20
+  unqualified_percent_limit: 40
+  n_base_limit: 5
+  detect_adapter_for_pe: true
+
+# bowtie2 alignment parameters
+bowtie2:
+  threads: 32
+  # --very-sensitive preset
+  preset: "--very-sensitive"
+  max_fragment_length: 2000
+
+# samtools sort threads
+samtools_sort:
+  threads: 8
+
+# sambamba markdup parameters
+sambamba:
+  threads: 16
+  overflow_list_size: 600000
+  hash_table_size: 525000
+
+# BAM filtering parameters
+filter_bam:
+  mapq_threshold: 10
+  nuclear_chroms:
+    - chr1
+    - chr2
+    - chr3
+    - chr4
+    - chr5
+    - chr6
+    - chr7
+    - chr8
+    - chr9
+    - chr10
+    - chr11
+    - chr12
+    - chr13
+    - chr14
+    - chr15
+    - chr16
+    - chr17
+    - chr18
+    - chr19
+    - chr20
+    - chr21
+    - chr22
+    - chrX
+    - chrY
+
+# bigwig parameters
+bigwig:
+  bin_size: 1
+  normalize_using: "CPM"
+  extend_reads: 150
+
+# MACS3 peak calling parameters
+macs3:
+  format: "BAMPE"
+  qvalue: 0.01
+  keep_dup: "all"
+
+# featureCounts parameters
+featurecounts:
+  threads: 8
+  min_overlap: 1
+
+# ChIPseeker parameters
+chipseeker:
+  tss_region: [-3000, 3000]
+  # Organism + annotation DB used for peak annotation.
+  # To switch organism, change these AND add the matching annotation
+  # package to pixi.toml (e.g. org.Mm.eg.db for mouse).
+  organism: "Homo sapiens"
+  anno_db: "org.Hs.eg.db"
+
+# Threads for fastqc
+fastqc:
+  threads: 4
