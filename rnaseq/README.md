@@ -25,6 +25,9 @@ merge per-sample counts → count matrix   (04-quant)
    │
    ▼
 DESeq2 (each group vs reference)         (05-deseq2)
+   │
+   ▼  (opt-in; runs on SYSTEM R, see below)
+GO/KEGG enrichment (per contrast)        (06-enrichment)
 ```
 
 | Step | Rule | Tool | Output dir |
@@ -37,6 +40,7 @@ DESeq2 (each group vs reference)         (05-deseq2)
 | 6 | `megadepth_bigwig` | megadepth | `results/03-megadepth-bigwig` |
 | 7 | `merge_counts` | python | `results/04-quant` |
 | 8 | `deseq2` | DESeq2 | `results/05-deseq2` |
+| _opt-in_ | `enrichment` | clusterProfiler (**system R**) | `results/06-enrichment/{contrast}` |
 
 ## Requirements
 
@@ -149,6 +153,60 @@ pixi run -e snakemake snakemake --dag | dot -Tsvg > dag.svg
 
 Logs are written per rule under `logs/`.
 
+## Enrichment analysis (optional, system R)
+
+Step 06 runs GO and KEGG over-representation analysis on the differentially
+expressed genes. Unlike every other step, it does **not** use pixi — it runs on
+your **system R** with packages **you install yourself**. This keeps the heavy,
+version-sensitive clusterProfiler + annotation stack out of the pixi
+environments. It is **not** part of the default run; you trigger it explicitly.
+
+**Supported organisms:** human, mouse, arabidopsis (only).
+
+It consumes the DESeq2 tables from step 05 (`{contrast}.deseq2.tsv`), splits the
+`significant` genes into up- and down-regulated sets by the sign of
+`log2FoldChange`, and uses all tested genes as the background universe.
+
+### 1. Install the required packages once (system R)
+
+```bash
+# Pick the OrgDb for your organism:
+#   human -> org.Hs.eg.db   mouse -> org.Mm.eg.db   arabidopsis -> org.At.tair.db
+Rscript -e 'if (!requireNamespace("BiocManager", quietly=TRUE)) install.packages("BiocManager"); \
+  BiocManager::install(c("clusterProfiler", "AnnotationDbi", "ggplot2", "org.Hs.eg.db"))'
+```
+
+The script checks for these on startup and stops with the exact install command
+if anything is missing. KEGG enrichment additionally needs **internet access**
+(it queries the KEGG REST API); set `enrichment.run_kegg: false` to skip it.
+
+### 2. Configure `config.yaml`
+
+```yaml
+enrichment:
+  organism: human          # human | mouse | arabidopsis
+  gene_id_type: ENSEMBL    # enrichGO keyType of your count-matrix IDs
+  strip_version: true      # strip Ensembl ".N" suffix (GENCODE); false for TAIR/symbols
+  rscript: "Rscript"       # system R; override with an absolute path to pin a specific R
+  run_kegg: true           # KEGG needs internet
+  pvalue_cutoff: 0.05
+  qvalue_cutoff: 0.2
+```
+
+Defaults per organism: human/mouse → `gene_id_type: ENSEMBL`, `strip_version: true`
+(KEGG genes are auto-converted to Entrez IDs); arabidopsis → `gene_id_type: TAIR`,
+`strip_version: false` (TAIR loci used directly for both GO and KEGG).
+
+### 3. Run it
+
+```bash
+# Builds results/06-enrichment/{contrast}/ for every contrast.
+pixi run -e snakemake snakemake -j 8 enrichment
+```
+
+(Snakemake still launches from pixi; the rule itself calls your system
+`Rscript`. The deseq2 tables are built first if they don't exist yet.)
+
 ## Key outputs
 
 | File | Description |
@@ -160,6 +218,10 @@ Logs are written per rule under `logs/`.
 | `results/04-quant/counts.tsv` | gene × sample raw count matrix |
 | `results/05-deseq2/normalized_counts.tsv` | size-factor normalized counts |
 | `results/05-deseq2/{group}_vs_{WT}.deseq2.tsv` | DESeq2 results per comparison |
+| `results/06-enrichment/{contrast}/go_{bp,cc,mf}_{up,down}.tsv` | GO enrichment per ontology and direction (opt-in) |
+| `results/06-enrichment/{contrast}/kegg_{up,down}.tsv` | KEGG enrichment per direction (opt-in) |
+| `results/06-enrichment/{contrast}/*_{barplot,dotplot}.pdf` | enrichment plots (only for non-empty results) |
+| `results/06-enrichment/{contrast}/summary.txt` | per-contrast enrichment summary |
 
 ## Adapting to another organism
 
@@ -169,7 +231,9 @@ The defaults target human (GENCODE v41). To switch organism:
 2. **`config.yaml`** — point `ref.star_index` and `ref.gtf` at them, and adjust
    `star.sjdb_overhang` to `read_length - 1` if your reads differ from 2×101.
 
-DESeq2 is organism-agnostic — no script edits are required.
+DESeq2 is organism-agnostic — no script edits are required. The optional
+enrichment step (step 06), however, only supports **human, mouse and
+arabidopsis**; set `enrichment.organism` accordingly (see above).
 
 ## Layout
 
@@ -181,5 +245,6 @@ rnaseq/
 ├── pixi.toml          # tool environments
 └── scripts/
     ├── merge_star_counts.py    # STAR ReadsPerGene -> count matrix
-    └── snakemake_deseq2.R      # DESeq2 differential expression
+    ├── snakemake_deseq2.R      # DESeq2 differential expression
+    └── enrichment.R            # GO/KEGG enrichment (opt-in; system R)
 ```

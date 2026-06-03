@@ -45,3 +45,26 @@ deseq2:
   # Thresholds below only flag the `significant` column; all genes are reported.
   padj_threshold: 0.05
   lfc_threshold: 1
+
+# GO/KEGG enrichment parameters (step 06 — OPT-IN, not run by default).
+# This step runs on your *system* R (NOT pixi); you must install
+# clusterProfiler, AnnotationDbi, ggplot2 and the organism OrgDb yourself.
+# Run it with:  pixi run -e snakemake snakemake -j 8 enrichment
+enrichment:
+  # Only human, mouse and arabidopsis are supported.
+  organism: human          # human | mouse | arabidopsis
+  # Gene-ID type of the count-matrix IDs; used as the enrichGO keyType.
+  #   human/mouse GENCODE -> ENSEMBL ; arabidopsis (TAIR10/Araport11) -> TAIR
+  #   (SYMBOL / ENTREZID are also accepted if your GTF uses them)
+  gene_id_type: ENSEMBL
+  # Strip Ensembl ".N" version suffixes (ENSG00000223972.5 -> ...972). Set
+  # true for GENCODE human/mouse; false for TAIR / symbol IDs.
+  strip_version: true
+  # System R interpreter. "Rscript" resolves the host R from PATH; override
+  # with an absolute path (e.g. /usr/local/bin/Rscript) to pin a specific R.
+  rscript: "Rscript"
+  # KEGG enrichment queries the KEGG REST API and needs internet access.
+  run_kegg: true
+  # enrichGO / enrichKEGG term significance cutoffs.
+  pvalue_cutoff: 0.05
+  qvalue_cutoff: 0.2
