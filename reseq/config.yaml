@@ -1,0 +1,36 @@
+# Resequencing (DNA) Snakemake pipeline configuration
+# ===================================================
+
+# Reference files
+ref:
+  # bwa index prefix == the genome FASTA path used when running `bwa index`.
+  # Expects ref/genome.fa plus ref/genome.fa.{amb,ann,bwt,pac,sa}
+  bwa_index: "ref/genome.fa"
+
+# fastp parameters
+fastp:
+  threads: 4
+  length_required: 36
+  qualified_quality_phred: 20
+  unqualified_percent_limit: 40
+  n_base_limit: 5
+  detect_adapter_for_pe: true
+
+# bwa mem alignment parameters
+bwa:
+  threads: 32
+
+# samtools sort threads (used in the bwa mem | samtools sort pipe)
+samtools_sort:
+  threads: 8
+
+# sambamba markdup parameters (duplicates are MARKED, reads kept)
+sambamba:
+  threads: 16
+  overflow_list_size: 600000
+  hash_table_size: 525000
+
+# Read group (@RG) written by bwa mem.
+# ID / SM / LB default to the sample name; only the platform (PL) is set here.
+read_group:
+  platform: "ILLUMINA"
